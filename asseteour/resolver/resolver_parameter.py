@@ -1,20 +1,9 @@
 """Populate the property objects
 """
-import copy
-import json
-import os
+
 import typing
-from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass
 from typing import List
 
-from compipe.exception.validate_error import GErrorNullObject, GErrorValue
-from compipe.response.command_result import MSGStatusCodes
-from compipe.utils.logging import logger
-from compipe.utils.parameters import (ARG_DATA, ARG_FILE, ARG_GUID, ARG_NAME,
-                                      ARG_OBJ, ARG_PARENT)
-from compipe.utils.task_queue_helper import TQHelper
-from github_app.github_helper import JsonPropertiesHelper
 from pydantic import BaseModel, Field
 
 

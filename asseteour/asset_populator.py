@@ -1,6 +1,6 @@
 """Publish properties (configs) from github to google drive
 """
-import json
+
 import os
 
 from compipe.exception.general_warning import WarningGotEmptyValue
@@ -12,7 +12,7 @@ from compipe.utils.parameters import ARG_OBJ, ARG_OUTPUT
 from compipe.utils.singleton import Singleton
 from compipe.utils.task_queue_helper import TQHelper
 
-from github_app.github_helper import JSONPropertyFile
+from .github_app.github_helper import JSONPropertyFile
 
 from .resolver.asset_resolver import AssetResolver, ResolverParam
 from .resolver.resolver_parameter import ResolverParam
