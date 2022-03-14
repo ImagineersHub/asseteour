@@ -1,21 +1,28 @@
+import hashlib
 import json
 import logging
 import os
 import re
-import hashlib
 from collections import OrderedDict
+from contextlib import contextmanager
 
-from numpy.lib.function_base import delete
 from compipe.exception.validate_error import GErrorValue
-
-import pydantic
-from github import Github
-
 from compipe.utils.access import GITHUB_TOKEN_KEY, AccessHub
-from utils.context_manager import logger_blocker
 from compipe.utils.logging import logger
 from compipe.utils.parameters import (ARG_DATA, ARG_DIR, ARG_FILE, ARG_OUTPUT,
                                       ARG_PARENT)
+from github import Github, UnknownObjectException
+
+
+@contextmanager
+def logger_blocker(logger_level=logging.DEBUG):
+    try:
+        logger = logging.getLogger()  # pylint: disable=no-member
+        ori_level = logger.level
+        logger.setLevel(logger_level)
+        yield
+    finally:
+        logger.setLevel(ori_level)
 
 
 class JSONPropertyFile():
@@ -35,6 +42,10 @@ class JSONPropertyFile():
         self.data = json.dumps(_data, indent=4)
 
     def commit(self, repo, sha=None, branch='master'):
+        # represent the git status
+        # true: add/change
+        # message: logging message
+        results = (True, 'None')
 
         with logger_blocker(logger_level=logging.WARNING):
             message_header = '[AUTO] Generate configs'
@@ -58,14 +69,19 @@ class JSONPropertyFile():
                                      self.data,
                                      sha,
                                      branch=branch)
+                    results = (True, f'Updated config: {self.output}')
                 else:
-                    logger.warning(f'[Skip Commit] No change happend on file: [{self.output}]')
+                    results = (False, f'[Skip Commit] No change happend on file: [{self.output}]')
 
             else:
                 repo.create_file(self.output,
                                  f'{message_header} [ADDED]',
                                  self.data,
                                  branch=branch)
+
+                results = (True, f'Added config: {self.output}')
+
+        return results
 
 
 class GithubHelper():
@@ -130,3 +146,40 @@ class JsonPropertiesHelper(GithubHelper):
                         ARG_DATA: json_content}
                 })
         return properties
+
+    def commit(self, msg: str, path: str, branch: str, data: dict):
+        results = (True, 'None')
+        with logger_blocker(logger_level=logging.ERROR):
+
+            # it would throw a not-found error when the specific file path doesn't
+            # exist on git repo
+            try:
+                content_file = self.repo.get_contents(path)
+            except UnknownObjectException:
+                content_file = None
+
+            if content_file:
+                remote_file_data = json.dumps(json.loads(content_file.decoded_content), indent=4)
+
+                # remote config file hash
+                remote_data_hash = hashlib.md5(remote_file_data.encode('utf-8')).hexdigest()
+                # local config file hash
+                local_data_hash = hashlib.md5(data.encode('utf-8')).hexdigest()
+                if remote_data_hash != local_data_hash:
+                    self.repo.update_file(path,
+                                          msg,
+                                          data,
+                                          content_file.sha,
+                                          branch=branch)
+                    results = (True, f'Updated config: {path}')
+                else:
+                    results = (False, f'[Skip Commit] No change happend on file: [{path}]')
+            else:
+                self.repo.create_file(path,
+                                      msg,
+                                      data,
+                                      branch=branch)
+
+                results = (True, f'Added config: {path}')
+
+        return results

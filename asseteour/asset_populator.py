@@ -15,6 +15,7 @@ from compipe.utils.task_queue_helper import TQHelper
 from github_app.github_helper import JSONPropertyFile
 
 from .resolver.asset_resolver import AssetResolver, ResolverParam
+from .resolver.resolver_parameter import ResolverParam
 
 """
 

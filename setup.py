@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='asseteour',         # How you named your package folder (MyLib)
-    version='0.0.3',      # Start with a small number and increase it with every change you make
+    version='0.0.6',      # Start with a small number and increase it with every change you make
     license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     description='A lite derived configuration system',   # Give a short description about your library
     author='esunvoteb',                   # Type in your name
@@ -15,7 +15,8 @@ setup(
         'compipe',
         'pydantic>=1.9.0',
         'matplotlib>=3.5.1',
-        'compipe>=0.1.14'
+        'compipe>=0.1.14',
+        'PyGithub>=1.55'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package
