@@ -94,6 +94,42 @@ class ThresholdRange(BaseModel):
         }
 
 
+class VolumeFloatRange(BaseModel):
+    """Represent the volume range values (Unit: M3)
+
+    """
+    min: float = Field(...,
+                       title='The lower threshold of the Range',
+                       ge=0,
+                       le=1)
+    max: float = Field(...,
+                       title='The upper threshold of the Range',
+                       ge=0,
+                       le=1)
+
+    @property
+    def values(self):
+        return (self.min, self.max)
+
+    @property
+    def is_valid(self):
+        return self.max > self.min
+
+    def set_values(self, range=(0, 0)):
+        self.min = range[0]
+        self.max = range[1]
+
+    class Config:
+        schema_extra = {
+            'examples': [
+                {
+                    'min': 0.0001,
+                    'max': 1
+                }
+            ]
+        }
+
+
 class ThresholdRange3D(BaseModel):
     """Represent the threshold range values (Region of interest)
 
