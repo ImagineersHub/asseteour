@@ -6,6 +6,8 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
+from .base_asset_wrapper import BaseAssetWrapper
+
 
 class SchemaRepo(BaseModel):
 
@@ -57,9 +59,9 @@ class ResolverParam(BaseModel):
                             title='model class name',
                             description='represent the pydantic model class name.')
 
-    model: typing.Any = Field(None,
-                              title='model object',
-                              description='represent the pydantic model object.')
+    model: typing.Type[BaseAssetWrapper] = Field(None,
+                                                 title='model object',
+                                                 description='represent the pydantic model object.')
 
     resolver: typing.Any = Field(None,
                                  title='resolver object',

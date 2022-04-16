@@ -2,10 +2,10 @@ import json
 import re
 from enum import Enum
 from typing import List, Optional
-from pydantic import BaseModel, Field, ValidationError, validator
+from pydantic import BaseModel, Field, validator, Extra
 
 
-class Metadata(BaseModel):
+class Metadata(BaseModel, extra=Extra.forbid):
     guid: str = Field(
         "",
         title='Config GUID',
