@@ -16,19 +16,25 @@ class AbstractAssetBuilder(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def pre_build(self, cache: str = None):
+    def pre_build(self):
         """Implement the behaviors to prepare the data before creating new assets.
         """
         pass
 
     @abstractmethod
-    def post_build(self, use_cache=False):
+    def post_build(self):
         """Implement the behaviors to response the build results.
         """
         pass
 
     @abstractmethod
-    def run(self, cache: dict):
+    def load_cache(self):
+        """Implement the behaviors to response the build results.
+        """
+        pass
+
+    @abstractmethod
+    def run(self, cache: bool = False):
         """Build assets with the given skin ID.
         """
         pass
@@ -54,21 +60,27 @@ class AssetBuilder(AbstractAssetBuilder):
     def build(self):
         pass
 
-    def pre_build(self, cache: str = None):
+    def load_cache(self):
         pass
 
-    def post_build(self, use_cache=False):
+    def pre_build(self):
         pass
 
-    def run(self, cache: dict = None):
+    def post_build(self):
+        pass
+
+    def run(self, cache: bool = False):
 
         self.pre_build()
 
         self.validator()
 
-        self.build()
+        if cache:
+            self.load_cache()
+        else:
+            self.build()
 
-        self.post_build()
+        return self.post_build()
 
     def export_cache(self):
         pass
