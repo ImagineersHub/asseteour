@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field
 
 from ..values import ClipRangeInt
 from .image import Resolution
-from .pil_filters import GFilter
 
 
 class Mask(BaseModel):
@@ -33,10 +32,6 @@ class Mask(BaseModel):
                               'Subtraction of bias and orgin value',
                               ge=1)
 
-    filters: List[GFilter] = Field([],
-                                   title='Mask filters (PIL)',
-                                   description='Represent the filter definitions '
-                                   'applying on the mask image')
 
     resolution: Resolution = Field(Resolution(width=1024, height=1024),
                                    title='Mask Resolution',
