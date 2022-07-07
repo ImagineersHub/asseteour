@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='asseteour',         # How you named your package folder (MyLib)
-    version='0.0.15',      # Start with a small number and increase it with every change you make
+    version='0.1.5',      # Start with a small number and increase it with every change you make
     license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     description='A lite derived configuration system',   # Give a short description about your library
     author='esunvoteb',                   # Type in your name
@@ -12,7 +12,6 @@ setup(
     keywords=['python', 'configuration', 'config', 'derived', 'json'],   # Keywords that define your package best
     packages=find_packages(),
     install_requires=[            # I get to this in a second
-        'compipe',
         'pydantic>=1.9.0',
         'matplotlib>=3.5.1',
         'compipe>=0.1.14',

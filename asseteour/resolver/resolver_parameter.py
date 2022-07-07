@@ -47,6 +47,9 @@ class ResolverParam(BaseModel):
                       title='git repo name',
                       description='represent the repo full path.')
 
+    base_url: str = Field('',
+                          title='Github Enterprise with custom hostname')
+
     name: str = Field('',
                       title='resolver name',
                       description='represent the resolver name.')

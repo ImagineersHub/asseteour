@@ -4,17 +4,17 @@ import copy
 import json
 from abc import ABCMeta, abstractmethod
 
-from asseteour.resolver.resolver_parameter import ResolverParam
 from compipe.exception.validate_error import GErrorNullObject, GErrorValue
 from compipe.response.command_result import MSGStatusCodes
 from compipe.utils.logging import logger
 from compipe.utils.parameters import (ARG_DATA, ARG_FILE, ARG_GUID, ARG_NAME,
                                       ARG_OBJ, ARG_PARENT)
 from compipe.utils.task_queue_helper import TQHelper
+from ..hash_code_helper import hexdigest_str
 from pydantic.error_wrappers import ValidationError
-from utils.hash_code_helper import hexdigest_str
 
 from ..github_app.github_helper import JsonPropertiesHelper
+from .resolver_parameter import ResolverParam
 
 
 class AbstractAssetResolver(metaclass=ABCMeta):
@@ -39,7 +39,8 @@ class AssetResolver(AbstractAssetResolver):
         self.repo_helper = JsonPropertiesHelper(param.repo,
                                                 param.filter_source,
                                                 param.filter_export,
-                                                param.output_path)
+                                                param.output_path,
+                                                param.base_url)
         # validate schema-json
         # e.g. validate(instance=value, schema=self.schema)
         self.model = param.model

@@ -8,9 +8,9 @@ import shlex
 from collections import defaultdict
 
 from compipe.cmd_wrapper import create_command_payload
-from compipe.utils.decoraters import (required_params,
+from compipe.utils.decorators import (required_params,
                                       verify_webhook_secret_sha1)
-from compipe.utils.decoraters_exception_handler import exception_handler
+from compipe.utils.decorators_exception_handler import exception_handler
 from compipe.utils.parameters import ARG_CLASS, ARG_PAYLOAD, ARG_POPULATE
 
 
