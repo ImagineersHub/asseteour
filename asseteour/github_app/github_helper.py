@@ -11,7 +11,9 @@ from compipe.utils.access import GITHUB_TOKEN_KEY, AccessHub
 from compipe.utils.logging import logger
 from compipe.utils.parameters import (ARG_DATA, ARG_DIR, ARG_FILE, ARG_OUTPUT,
                                       ARG_PARENT)
+
 from github import Github, UnknownObjectException
+DEFAULT_BASE_URL = "https://api.github.com"
 
 
 @contextmanager
@@ -86,11 +88,11 @@ class JSONPropertyFile():
 
 class GithubHelper():
     def __init__(self, repo_name, re_filter_source=None, re_filter_export=None, output=None, base_url=None):
+
         token = AccessHub().get_credential(GITHUB_TOKEN_KEY)
-        if base_url:
-            self.g = Github(base_url=base_url or "https://github.com/", login_or_token=token)
-        else:
-            self.g = Github(token)
+
+        self.g = Github(base_url=base_url or DEFAULT_BASE_URL, login_or_token=token)
+
         # parse repo client
         self.repo_name = repo_name
 
