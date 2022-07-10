@@ -111,8 +111,7 @@ class AssetPopulator(metaclass=Singleton):
 
                     # commit the changes to git repo
                     # /////////////////////////////////////////////////////////////////////
-                    (is_uploaded, msg) = resolver.repo_helper.commit(repo=resolver.repo_helper.repo,
-                                                                     output=config[ARG_OUTPUT],
+                    (is_uploaded, msg) = resolver.repo_helper.commit(output=config[ARG_OUTPUT],
                                                                      data=config_data,
                                                                      sha=sha,
                                                                      branch=resolver.main_branch)
