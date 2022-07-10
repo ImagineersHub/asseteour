@@ -87,7 +87,10 @@ class JSONPropertyFile():
 class GithubHelper():
     def __init__(self, repo_name, re_filter_source=None, re_filter_export=None, output=None, base_url=None):
         token = AccessHub().get_credential(GITHUB_TOKEN_KEY)
-        self.g = Github(base_url=base_url or "https://github.com/", login_or_token=token)
+        if base_url:
+            self.g = Github(base_url=base_url or "https://github.com/", login_or_token=token)
+        else:
+            self.g = Github(token)
         # parse repo client
         self.repo_name = repo_name
 
