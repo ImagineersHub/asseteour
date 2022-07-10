@@ -5,14 +5,15 @@ import os
 import re
 from collections import OrderedDict
 from contextlib import contextmanager
+from typing import Dict
 
 from compipe.exception.validate_error import GErrorValue
 from compipe.utils.access import GITHUB_TOKEN_KEY, AccessHub
 from compipe.utils.logging import logger
 from compipe.utils.parameters import (ARG_DATA, ARG_DIR, ARG_FILE, ARG_OUTPUT,
                                       ARG_PARENT)
+from github import Github
 
-from github import Github, UnknownObjectException
 DEFAULT_BASE_URL = "https://api.github.com"
 
 
@@ -27,66 +28,8 @@ def logger_blocker(logger_level=logging.DEBUG):
         logger.setLevel(ori_level)
 
 
-class JSONPropertyFile():
-    def __init__(self, config):
-        self.file_path = config[ARG_FILE]
-        self.output = config[ARG_OUTPUT]
-        self.parent = config[ARG_PARENT]
-
-        # remove temporary (internal) keys from the config data before committing
-        _data = OrderedDict(sorted(config[ARG_DATA].items()))
-        # tmp attribute name has '_' prefix
-        _tmp_keys = [key for key in _data.keys() if key[0] == '_']
-        # remove keys
-        for _key in _tmp_keys:
-            del _data[_key]
-
-        self.data = json.dumps(_data, indent=4)
-
-    def commit(self, repo, sha=None, branch='master'):
-        # represent the git status
-        # true: add/change
-        # message: logging message
-        results = (True, 'None')
-
-        with logger_blocker(logger_level=logging.WARNING):
-            message_header = '[AUTO] Generate configs'
-            # message = f'{message_header} - source:{self.file_path} target:{self.output}'
-            # if 'sha' is valid, it would perform update behaviors
-            # update_file and create_file methods are the build-in functions
-            # from pygithub Repository https://github.com/PyGithub/PyGithub
-            if sha:
-                # compare the str hash between local data and remote file. It would skip commit if the
-                # hash values are the same.
-                remote_file_data = json.dumps(json.loads(repo.get_contents(self.output).decoded_content),
-                                              indent=4)
-                # remote config file hash
-                remote_data_hash = hashlib.md5(remote_file_data.encode('utf-8')).hexdigest()
-                # local config file hash
-                local_data_hash = hashlib.md5(self.data.encode('utf-8')).hexdigest()
-                # compare config hash and perform the commit if they were different
-                if remote_data_hash != local_data_hash:
-                    repo.update_file(self.output,
-                                     f'{message_header} [UPDATED]',
-                                     self.data,
-                                     sha,
-                                     branch=branch)
-                    results = (True, f'Updated config: {self.output}')
-                else:
-                    results = (False, f'[Skip Commit] No change happend on file: [{self.output}]')
-
-            else:
-                repo.create_file(self.output,
-                                 f'{message_header} [ADDED]',
-                                 self.data,
-                                 branch=branch)
-
-                results = (True, f'Added config: {self.output}')
-
-        return results
-
-
 class GithubHelper():
+
     def __init__(self, repo_name, re_filter_source=None, re_filter_export=None, output=None, base_url=None):
 
         token = AccessHub().get_credential(GITHUB_TOKEN_KEY)
@@ -152,39 +95,56 @@ class JsonPropertiesHelper(GithubHelper):
                 })
         return properties
 
-    def commit(self, msg: str, path: str, branch: str, data: dict):
+    def commit(self, repo, output: str, config: Dict, sha=None, branch='master'):
+
+        # remove temporary (internal) keys from the config data before committing
+        _data = OrderedDict(sorted(config[ARG_DATA].items()))
+        # tmp attribute name has '_' prefix
+        _tmp_keys = [key for key in _data.keys() if key[0] == '_']
+        # remove keys
+        for _key in _tmp_keys:
+            del _data[_key]
+
+        config_data = json.dumps(_data, indent=4)
+
+        # represent the git status
+        # true: add/change
+        # message: logging message
         results = (True, 'None')
-        with logger_blocker(logger_level=logging.ERROR):
 
-            # it would throw a not-found error when the specific file path doesn't
-            # exist on git repo
-            try:
-                content_file = self.repo.get_contents(path)
-            except UnknownObjectException:
-                content_file = None
+        with logger_blocker(logger_level=logging.WARNING):
 
-            if content_file:
-                remote_file_data = json.dumps(json.loads(content_file.decoded_content), indent=4)
-
+            message_header = '[AUTO] Generate configs'
+            # message = f'{message_header} - source:{self.file_path} target:{self.output}'
+            # if 'sha' is valid, it would perform update behaviors
+            # update_file and create_file methods are the build-in functions
+            # from pygithub Repository https://github.com/PyGithub/PyGithub
+            if sha:
+                # compare the str hash between local data and remote file. It would skip commit if the
+                # hash values are the same.
+                remote_file_data = json.dumps(json.loads(repo.get_contents(output).decoded_content),
+                                              indent=4)
                 # remote config file hash
                 remote_data_hash = hashlib.md5(remote_file_data.encode('utf-8')).hexdigest()
                 # local config file hash
-                local_data_hash = hashlib.md5(data.encode('utf-8')).hexdigest()
+                local_data_hash = hashlib.md5(config_data.encode('utf-8')).hexdigest()
+                # compare config hash and perform the commit if they were different
                 if remote_data_hash != local_data_hash:
-                    self.repo.update_file(path,
-                                          msg,
-                                          data,
-                                          content_file.sha,
-                                          branch=branch)
-                    results = (True, f'Updated config: {path}')
+                    repo.update_file(output,
+                                     f'{message_header} [UPDATED]',
+                                     config_data,
+                                     sha,
+                                     branch=branch)
+                    results = (True, f'Updated config: {output}')
                 else:
-                    results = (False, f'[Skip Commit] No change happend on file: [{path}]')
-            else:
-                self.repo.create_file(path,
-                                      msg,
-                                      data,
-                                      branch=branch)
+                    results = (False, f'[Skip Commit] No change happend on file: [{output}]')
 
-                results = (True, f'Added config: {path}')
+            else:
+                repo.create_file(output,
+                                 f'{message_header} [ADDED]',
+                                 config_data,
+                                 branch=branch)
+
+                results = (True, f'Added config: {output}')
 
         return results

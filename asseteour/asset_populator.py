@@ -12,8 +12,6 @@ from compipe.utils.parameters import ARG_OBJ, ARG_OUTPUT
 from compipe.utils.singleton import Singleton
 from compipe.utils.task_queue_helper import TQHelper
 
-from .github_app.github_helper import JSONPropertyFile
-
 from .resolver.asset_resolver import AssetResolver, ResolverParam
 from .resolver.resolver_parameter import ResolverParam
 
@@ -96,10 +94,11 @@ class AssetPopulator(metaclass=Singleton):
 
                     # commit the changes to git repo
                     # /////////////////////////////////////////////////////////////////////
-                    (is_uploaded, msg) = JSONPropertyFile(config).commit(
-                        repo=resolver.repo_helper.repo,
-                        sha=sha,
-                        branch=resolver.main_branch)
+                    (is_uploaded, msg) = resolver.repo_helper.commit(repo=resolver.repo_helper.repo,
+                                                                     output=config[ARG_OUTPUT],
+                                                                     config=config,
+                                                                     sha=sha,
+                                                                     branch=resolver.main_branch)
 
                     TQHelper.post(payload=msg,
                                   msg_status=MSGStatusCodes.success if is_uploaded else MSGStatusCodes.warning)
