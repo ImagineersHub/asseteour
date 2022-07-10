@@ -22,3 +22,8 @@ class BaseAssetWrapper(metaclass=ABCMeta):
     @abstractmethod
     def publish(self):
         pass
+
+    @property
+    @abstractmethod
+    def yaml(self):
+        pass

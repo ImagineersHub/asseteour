@@ -5,7 +5,7 @@ import os
 import re
 from collections import OrderedDict
 from contextlib import contextmanager
-from typing import Dict
+from typing import Dict, Tuple
 
 from compipe.exception.validate_error import GErrorValue
 from compipe.utils.access import GITHUB_TOKEN_KEY, AccessHub
@@ -78,12 +78,19 @@ class GithubHelper():
 
 
 class JsonPropertiesHelper(GithubHelper):
+
     def get_properties(self):
+
         configs = super().get_properties()
+
         properties = {}
+
         with logger_blocker(logger_level=logging.ERROR):
+
             for config in configs:
+
                 path, _ = os.path.splitext(config.path)
+
                 json_content = json.loads(config.decoded_content)
 
                 properties.update({
@@ -93,16 +100,20 @@ class JsonPropertiesHelper(GithubHelper):
                         ARG_PARENT: json_content.get(ARG_PARENT),
                         ARG_DATA: json_content}
                 })
+
         return properties
 
-    def commit(self, repo, output: str, config: Dict, sha=None, branch='master'):
+    def commit(self, output: str, data: Dict, sha=None, branch='master') -> Tuple[bool, str]:
 
         # remove temporary (internal) keys from the config data before committing
-        _data = OrderedDict(sorted(config[ARG_DATA].items()))
+        _data = OrderedDict(sorted(data.items()))
+
         # tmp attribute name has '_' prefix
         _tmp_keys = [key for key in _data.keys() if key[0] == '_']
+
         # remove keys
         for _key in _tmp_keys:
+
             del _data[_key]
 
         config_data = json.dumps(_data, indent=4)
@@ -122,28 +133,35 @@ class JsonPropertiesHelper(GithubHelper):
             if sha:
                 # compare the str hash between local data and remote file. It would skip commit if the
                 # hash values are the same.
-                remote_file_data = json.dumps(json.loads(repo.get_contents(output).decoded_content),
+                remote_file_data = json.dumps(json.loads(self.repo.get_contents(output).decoded_content),
                                               indent=4)
                 # remote config file hash
                 remote_data_hash = hashlib.md5(remote_file_data.encode('utf-8')).hexdigest()
+
                 # local config file hash
                 local_data_hash = hashlib.md5(config_data.encode('utf-8')).hexdigest()
+
                 # compare config hash and perform the commit if they were different
                 if remote_data_hash != local_data_hash:
-                    repo.update_file(output,
-                                     f'{message_header} [UPDATED]',
-                                     config_data,
-                                     sha,
-                                     branch=branch)
+
+                    self.repo.update_file(output,
+                                          f'{message_header} [UPDATED]',
+                                          config_data,
+                                          sha,
+                                          branch=branch)
+
                     results = (True, f'Updated config: {output}')
+
                 else:
+
                     results = (False, f'[Skip Commit] No change happend on file: [{output}]')
 
             else:
-                repo.create_file(output,
-                                 f'{message_header} [ADDED]',
-                                 config_data,
-                                 branch=branch)
+
+                self.repo.create_file(output,
+                                      f'{message_header} [ADDED]',
+                                      config_data,
+                                      branch=branch)
 
                 results = (True, f'Added config: {output}')
 

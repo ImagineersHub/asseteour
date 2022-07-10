@@ -8,9 +8,10 @@ from compipe.exception.validate_error import GErrorKeyNotFound
 from compipe.response.command_result import MSGStatusCodes
 from compipe.utils.io_helper import json_loader
 from compipe.utils.logging import logger
-from compipe.utils.parameters import ARG_OBJ, ARG_OUTPUT
+from compipe.utils.parameters import ARG_OBJ, ARG_OUTPUT, ARG_DATA
 from compipe.utils.singleton import Singleton
 from compipe.utils.task_queue_helper import TQHelper
+from typing import Dict
 
 from .resolver.asset_resolver import AssetResolver, ResolverParam
 from .resolver.resolver_parameter import ResolverParam
@@ -31,6 +32,7 @@ ignore_path: it would skip building the configs when matching to the ignore list
 
 
 class AssetPopulator(metaclass=Singleton):
+
     def __init__(self, resolver_cfg_path: str):
         self.resolver_cfg_path = resolver_cfg_path
         self.resolver_cfg_data = json_loader(self.resolver_cfg_path)
@@ -44,6 +46,18 @@ class AssetPopulator(metaclass=Singleton):
 
     def get_resolver(self, model_name: str):
         self.get_resolver_param(model_name=model_name)
+
+    def clean_up_temporary_keys(self, data: Dict):
+
+        # tmp attribute name has '_' prefix
+        _tmp_keys = [key for key in data.keys() if key[0] == '_']
+
+        # remove keys
+        for _key in _tmp_keys:
+            # remove temporary key from the data config
+            del data[_key]
+
+        return data
 
     def populate(self, resolver: AssetResolver, filters: list):
         """Generate the published configs to github.
@@ -92,11 +106,14 @@ class AssetPopulator(metaclass=Singleton):
                     # /////////////////////////////////////////////////////////////////////
                     sha = resolver.repo_helper.export_files.get(config[ARG_OUTPUT])
 
+                    # clean up data before committing
+                    config_data = self.clean_up_temporary_keys(data=config[ARG_DATA])
+
                     # commit the changes to git repo
                     # /////////////////////////////////////////////////////////////////////
                     (is_uploaded, msg) = resolver.repo_helper.commit(repo=resolver.repo_helper.repo,
                                                                      output=config[ARG_OUTPUT],
-                                                                     config=config,
+                                                                     data=config_data,
                                                                      sha=sha,
                                                                      branch=resolver.main_branch)
 
