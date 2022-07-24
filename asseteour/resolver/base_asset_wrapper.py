@@ -14,16 +14,15 @@ class BaseAssetWrapper(metaclass=ABCMeta):
     def schema_json(cls, indent=4):
         pass
 
-    @abstractmethod
-    def json(self):
-        pass
-
     @property
     @abstractmethod
     def publish(self):
         pass
 
-    @property
+    @abstractmethod
+    def json(self):
+        pass
+
     @abstractmethod
     def yaml(self):
         pass
