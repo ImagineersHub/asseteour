@@ -46,7 +46,7 @@ class GithubHelper():
         # keep exsiting file sha information
         self.re_filter_export = re_filter_export or r'^(Export\/Data\/.*)\.json'
         # it could help keep the 'sha' info for the existing file
-        self.export_files = {}
+        self.sha_mappings = {}
         # keep the export config path
         self.output = output
 
@@ -66,12 +66,12 @@ class GithubHelper():
                     contents.extend(self.repo.get_contents(file_content.path))
                 elif not self.re_filter_source or re.fullmatch(self.re_filter_source, file_content.path):
                     file_lists.append(file_content)
-                elif not self.re_filter_export or re.fullmatch(self.re_filter_export, file_content.path):
+                # elif not self.re_filter_export or re.fullmatch(self.re_filter_export, file_content.path):
                     # keep the the 'sha' info to the existing files, it would help to perform 'update'
                     # changes on github
-                    self.export_files.update({
-                        file_content.path: file_content.sha
-                    })
+                self.sha_mappings.update({
+                    file_content.path: file_content.sha
+                })
 
         logger.debug(f'Loaded properties from repo: [{self.repo_name}]')
         return file_lists

@@ -34,19 +34,30 @@ class AbstractAssetResolver(metaclass=ABCMeta):
 
 class AssetResolver(AbstractAssetResolver):
     def __init__(self, param: ResolverParam):
+        self._repo_helper = None
         self.ignore_paths = param.ignore_paths
         self.main_branch = param.main_branch
-        self.repo_helper = JsonPropertiesHelper(param.repo,
-                                                param.filter_source,
-                                                param.filter_export,
-                                                param.output_path,
-                                                param.base_url)
+        self.param = param
+
         # validate schema-json
         # e.g. validate(instance=value, schema=self.schema)
         self.model = param.model
         self.schema = param.model.schema_json(indent=4)
         self.configs = {}
         self.dependency = {}
+
+        # it's aimed to cache the resolved config when building dependencies
+        self._cached_configs = {}
+
+    @property
+    def repo_helper(self):
+        if not self._repo_helper:
+            self._repo_helper = JsonPropertiesHelper(self.param.repo,
+                                                     self.param.filter_source,
+                                                     self.param.filter_export,
+                                                     self.param.output_path,
+                                                     self.param.base_url)
+        return self._repo_helper
 
     def get(self, path):
         return self.configs.get(path)
@@ -79,21 +90,34 @@ class AssetResolver(AbstractAssetResolver):
         #                         -> sub-child
         for routes in self.dependency.values():
             for path in routes:
+
+                if path in self._cached_configs:
+                    continue
+
                 config = self.configs.get(path)
                 if config.get(ARG_PARENT):
                     parent_config = self.configs.get(config[ARG_PARENT])
                     populated_config_data = copy.deepcopy(parent_config.get(ARG_DATA))
+
                     # start to override the sub-config properties
-                    self._override_data(config[ARG_DATA], populated_config_data)
+                    self.override_data(config[ARG_DATA], populated_config_data)
                     populated_config_data[ARG_GUID] = self._gen_guid(path)
-                    asset = self.validate(path, populated_config_data)
-                    self.configs[path][ARG_DATA] = dict(populated_config_data)
-                    self.configs[path][ARG_OBJ] = asset
+
+                else:
+                    populated_config_data = copy.deepcopy(config.get(ARG_DATA))
+
+                asset = self.validate(path, populated_config_data)
+                self.configs[path][ARG_DATA] = dict(populated_config_data)
+                self.configs[path][ARG_OBJ] = asset
+
+                # mark the built config as cached
+                self._cached_configs[path] = True
 
     def _gen_guid(self, data):
         return next(iter(hexdigest_str(data)), None)
 
-    def _override_data(self, source: dict, target: dict):
+    @classmethod
+    def override_data(cls, source: dict, target: dict):
         """Perform the resolver on dict object. The child object inherits values
         from parent
 
@@ -109,17 +133,18 @@ class AssetResolver(AbstractAssetResolver):
                     if not target[key]:
                         target[key] = value
                     else:
-                        self._override_data(value, target[key])
+                        cls.override_data(value, target[key])
                         continue
             # process the array type object
             elif isinstance(value, list) and key in target:
-                value = self._resolve_list_items(value, target[key])
+                value = cls.resolve_list_items(value, target[key])
 
             target.update({
                 key: value
             })
 
-    def _resolve_list_items(self, source, target):
+    @classmethod
+    def resolve_list_items(cls, source, target):
         """Perform the resolver on 'list' property. 
 
         Comparing rules:
@@ -147,7 +172,7 @@ class AssetResolver(AbstractAssetResolver):
                 source_item = next(iter([src for src in source if src[ARG_NAME] == item[ARG_NAME]]), None)
                 if source_item:
                     # copy the source list item to the target
-                    self._override_data(source_item, item)
+                    cls.override_data(source_item, item)
 
                 # add the resolved target item to the new lists
                 new_list.append(item)

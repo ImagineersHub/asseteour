@@ -104,7 +104,7 @@ class AssetPopulator(metaclass=Singleton):
                     # if the file does exist, it would load the sha hash value for
                     # perform 'update' instead of 'add' on git.
                     # /////////////////////////////////////////////////////////////////////
-                    sha = resolver.repo_helper.export_files.get(config[ARG_OUTPUT])
+                    sha = resolver.repo_helper.sha_mappings.get(config[ARG_OUTPUT])
 
                     # clean up data before committing
                     config_data = self.clean_up_temporary_keys(data=config[ARG_DATA])
