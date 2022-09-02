@@ -81,15 +81,15 @@ class AssetPopulator(metaclass=Singleton):
         else:
             # only build the selected configs of the resolver
             # //////////////////////////////////////////////////////////////
-            for cfg in filters:
+            for filter_cfg in filters:
                 for _, configs in resolver.dependency.items():
 
                     # the filter item is represented by the config basename,
                     # we would need to re-format the lists before compareing
                     # //////////////////////////////////////////////////////
                     shorten_cfg_lists = [os.path.split(cfg)[-1] for cfg in configs]
-                    if cfg in shorten_cfg_lists:
-                        index = shorten_cfg_lists.index(cfg)
+                    if filter_cfg in shorten_cfg_lists:
+                        index = shorten_cfg_lists.index(filter_cfg)
                         cfg_stacks.update(configs[index:])
 
         if not cfg_stacks:

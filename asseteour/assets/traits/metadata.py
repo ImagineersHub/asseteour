@@ -51,11 +51,11 @@ class Metadata(BaseModel, extra=Extra.forbid):
         "It's a read-only property."
     )
 
-    @validator('guid')
-    def guid_is_not_empty(cls, v):  # pylint: disable=no-self-argument
-        if not v:
-            raise ValueError('must contain a valid guid')
-        return v
+    # @validator('guid')
+    # def guid_is_not_empty(cls, v):  # pylint: disable=no-self-argument
+    #     if not v:
+    #         raise ValueError('must contain a valid guid')
+    #     return v
 
     @validator('parent')
     def parent_path_start_with_root(cls, v):  # pylint: disable=no-self-argument

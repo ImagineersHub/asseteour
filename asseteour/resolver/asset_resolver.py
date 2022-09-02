@@ -63,7 +63,8 @@ class AssetResolver(AbstractAssetResolver):
         return self.configs.get(path)
 
     def load_configs(self):
-        self.configs = self.repo_helper.get_properties()
+        self.configs = self.repo_helper.get_properties(branch=self.main_branch,
+                                                       filters=self.param.filter_source)
 
         for cfg in [cfg for _, cfg in self.configs.items() if not cfg.get(ARG_PARENT)]:
             obj = self.model.parse_obj(cfg.get(ARG_DATA))

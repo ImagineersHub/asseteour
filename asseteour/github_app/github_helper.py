@@ -5,7 +5,7 @@ import os
 import re
 from collections import OrderedDict
 from contextlib import contextmanager
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 
 from compipe.exception.validate_error import GErrorValue
 from compipe.utils.access import GITHUB_TOKEN_KEY, AccessHub
@@ -44,7 +44,7 @@ class GithubHelper():
         # initialize filters
         self.re_filter_source = re_filter_source
         # keep exsiting file sha information
-        self.re_filter_export = re_filter_export or r'^(Export\/Data\/.*)\.json'
+        self.re_filter_export = re_filter_export
         # it could help keep the 'sha' info for the existing file
         self.sha_mappings = {}
         # keep the export config path
@@ -54,34 +54,51 @@ class GithubHelper():
         with logger_blocker(logger_level=logging.ERROR):
             return self.repo.get_contents(name)
 
-    def get_properties(self):
+    def get_properties(self, branch: str, filters=None):
+        """Get the config sha lists and cache the config content. 
+
+        Args:
+            branch (str): Represent the the branch name.
+            filters (_type_, optional): Represent the regex to filter the configs. 
+                                        Defaults to None.
+
+        Raises:
+            GErrorValue: represent the flag of founding invalid repo name
+
+        Returns:
+            List[ContentFile]: Represent the config content file lists.
+        """
+
         with logger_blocker(logger_level=logging.ERROR):
+
             file_lists = []
+
             if not self.repo_name or not self.repo:
                 raise GErrorValue('Repo\'s not been initialized.')
-            contents = self.repo.get_contents("")
-            while contents:
-                file_content = contents.pop(0)
-                if file_content.type == ARG_DIR:
-                    contents.extend(self.repo.get_contents(file_content.path))
-                elif not self.re_filter_source or re.fullmatch(self.re_filter_source, file_content.path):
-                    file_lists.append(file_content)
-                # elif not self.re_filter_export or re.fullmatch(self.re_filter_export, file_content.path):
-                    # keep the the 'sha' info to the existing files, it would help to perform 'update'
-                    # changes on github
+
+            git_trees = self.repo.get_git_tree(sha=branch or self.repo.default_branch, recursive=True)
+
+            for tree_node in git_trees.tree:
+
+                # keep the sha cache for the whole git file/folder trees
                 self.sha_mappings.update({
-                    file_content.path: file_content.sha
+                    tree_node.path: tree_node.sha
                 })
 
+                # involve regex to filter the file lists
+                if filters and re.fullmatch(filters, tree_node.path):
+                    file_lists.append(self.repo.get_contents(path=tree_node.path))
+
         logger.debug(f'Loaded properties from repo: [{self.repo_name}]')
+
         return file_lists
 
 
 class JsonPropertiesHelper(GithubHelper):
 
-    def get_properties(self):
+    def get_properties(self, branch="", filters=None):
 
-        configs = super().get_properties()
+        configs = super().get_properties(branch=branch, filters=filters)
 
         properties = {}
 
@@ -89,7 +106,11 @@ class JsonPropertiesHelper(GithubHelper):
 
             for config in configs:
 
-                path, _ = os.path.splitext(config.path)
+                path, ext = os.path.splitext(config.path)
+
+                if ext != ".json":
+                    # skip the non-json files
+                    continue
 
                 json_content = json.loads(config.decoded_content)
 
