@@ -4,17 +4,19 @@ import copy
 import json
 from abc import ABCMeta, abstractmethod
 
-from compipe.exception.validate_error import GErrorNullObject, GErrorValue
+from compipe.exception.validate_error import GErrorNullObject, GErrorValue, GErrorKeyNotFound
 from compipe.response.command_result import MSGStatusCodes
 from compipe.utils.logging import logger
-from compipe.utils.parameters import (ARG_DATA, ARG_FILE, ARG_GUID, ARG_NAME,
-                                      ARG_OBJ, ARG_PARENT)
+from compipe.utils.parameters import (ARG_DATA, ARG_FILE, ARG_GUID, ARG_ID,
+                                      ARG_NAME, ARG_OBJ, ARG_PARENT)
 from compipe.utils.task_queue_helper import TQHelper
-from ..hash_code_helper import hexdigest_str
 from pydantic.error_wrappers import ValidationError
 
 from ..github_app.github_helper import JsonPropertiesHelper
+from ..hash_code_helper import hexdigest_str
 from .resolver_parameter import ResolverParam
+
+IDENTITY_KEYS = set('id', 'name')
 
 
 class AbstractAssetResolver(metaclass=ABCMeta):
@@ -168,11 +170,14 @@ class AssetResolver(AbstractAssetResolver):
                     new_list.append(item)
             # resolve the target items
             for item in target:
-                # next(map(lambda x: x[ARG_NAME] == item[ARG_NAME], source), None)
-                source_item = next(iter([src for src in source if src[ARG_NAME] == item[ARG_NAME]]), None)
+                # parse the valid identity key to compare the list elements
+                if (identity_key := next(list(IDENTITY_KEYS.intersection(item.keys())), None)) is None:
+                    raise GErrorKeyNotFound(f'Not found one of the valid identity keys from {IDENTITY_KEYS}')
+
+                source_item = next(iter([src for src in source if src[identity_key] == item[identity_key]]), None)
                 if source_item:
                     # copy the source list item to the target
-                    cls.override_data(source_item, item)
+                    cls.override_data(source=source_item, target=item)
 
                 # add the resolved target item to the new lists
                 new_list.append(item)
