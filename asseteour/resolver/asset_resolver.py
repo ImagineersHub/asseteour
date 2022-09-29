@@ -16,7 +16,7 @@ from ..github_app.github_helper import JsonPropertiesHelper
 from ..hash_code_helper import hexdigest_str
 from .resolver_parameter import ResolverParam
 
-IDENTITY_KEYS = set('id', 'name')
+IDENTITY_KEYS = {'id', 'name'}
 
 
 class AbstractAssetResolver(metaclass=ABCMeta):
