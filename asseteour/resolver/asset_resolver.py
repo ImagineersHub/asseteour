@@ -172,7 +172,7 @@ class AssetResolver(AbstractAssetResolver):
             # resolve the target items
             for item in target:
                 # parse the valid identity key to compare the list elements
-                if (identity_key := next(list(IDENTITY_KEYS.intersection(item.keys())), None)) is None:
+                if (identity_key := next(iter(IDENTITY_KEYS.intersection(item.keys())), None)) is None:
                     raise GErrorKeyNotFound(f'Not found one of the valid identity keys from {IDENTITY_KEYS}')
 
                 source_item = next(iter([src for src in source if src[identity_key] == item[identity_key]]), None)
