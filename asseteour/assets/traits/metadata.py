@@ -51,6 +51,12 @@ class Metadata(BaseModel, extra=Extra.forbid):
         "It's a read-only property."
     )
 
+    description: Optional[str] = Field(
+        '',
+        title='Object description',
+        description="Represent the exact purposes of using the config."
+    )
+
     # @validator('guid')
     # def guid_is_not_empty(cls, v):  # pylint: disable=no-self-argument
     #     if not v:
