@@ -7,7 +7,7 @@ from abc import ABCMeta, abstractmethod
 from compipe.exception.validate_error import GErrorNullObject, GErrorValue, GErrorKeyNotFound
 from compipe.response.command_result import MSGStatusCodes
 from compipe.utils.logging import logger
-from compipe.utils.parameters import (ARG_DATA, ARG_FILE, ARG_GUID, ARG_ID,
+from compipe.utils.parameters import (ARG_DATA, ARG_FILE, ARG_GUID,
                                       ARG_NAME, ARG_OBJ, ARG_PARENT)
 from compipe.utils.task_queue_helper import TQHelper
 from pydantic.error_wrappers import ValidationError

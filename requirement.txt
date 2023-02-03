@@ -1,5 +1,0 @@
-compipe
-pydantic>=1.9.0
-matplotlib
-PyGithub
-twine
