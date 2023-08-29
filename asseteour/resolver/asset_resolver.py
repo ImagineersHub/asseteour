@@ -140,7 +140,7 @@ class AssetResolver(AbstractAssetResolver):
                         continue
             # process the array type object
             elif isinstance(value, list) and key in target:
-                if key[-1] == '+':
+                if not str(key).startswith('uid_'):
                     value = cls.resolve_list_items(value, target[key])
 
             target.update({
