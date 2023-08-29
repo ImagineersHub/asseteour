@@ -186,9 +186,9 @@ class AssetResolver(AbstractAssetResolver):
         else:
             new_list = list(set(source + target))
 
-        # sort 'str' lists
-        if len(new_list) > 0 and isinstance(new_list[0], str):
-            new_list.sort()
+        # # sort 'str' lists
+        # if len(new_list) > 0 and isinstance(new_list[0], str):
+        #     new_list.sort()
 
         return new_list
 
