@@ -1,5 +1,5 @@
 git+https://github.com/ImagineersHub/compipe.git@main#egg=compipe
 pydantic>=1.9.0
 matplotlib
-PyGithub
+PyGithub==2.1.1
 twine

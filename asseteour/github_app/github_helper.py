@@ -13,6 +13,7 @@ from compipe.utils.logging import logger
 from compipe.utils.parameters import (ARG_DATA, ARG_DIR, ARG_FILE, ARG_OUTPUT,
                                       ARG_PARENT)
 from github import Github
+from github import Auth
 
 DEFAULT_BASE_URL = "https://api.github.com"
 
@@ -33,14 +34,16 @@ class GithubHelper():
     def __init__(self, repo_name, re_filter_source=None, re_filter_export=None, output=None, base_url=None):
 
         token = AccessHub().get_credential(GITHUB_TOKEN_KEY)
-
-        self.g = Github(base_url=base_url or DEFAULT_BASE_URL, login_or_token=token)
-
+        # using an access token
+        auth = Auth.Token(token)
+        self.g = Github(base_url=base_url or DEFAULT_BASE_URL, auth=auth)
         # parse repo client
         self.repo_name = repo_name
 
-        with logger_blocker(logger_level=logging.ERROR):  # hide massive http logs
+        # use with statement to avoid printing spammy log messages
+        with logger_blocker(logger_level=logging.ERROR): 
             self.repo = self.g.get_repo(self.repo_name)
+
         # initialize filters
         self.re_filter_source = re_filter_source
         # keep exsiting file sha information
@@ -178,10 +181,9 @@ class JsonPropertiesHelper(GithubHelper):
                     results = (False, f'[Skip Commit] No change happend on file: [{output}]')
 
             else:
-
-                self.repo.create_file(output,
-                                      f'{message_header} [ADDED]',
-                                      config_data,
+                self.repo.create_file(path=output,
+                                      message=f'{message_header} [ADDED]',
+                                      content=json.dumps(data, indent=4),
                                       branch=branch)
 
                 results = (True, f'Added config: {output}')
