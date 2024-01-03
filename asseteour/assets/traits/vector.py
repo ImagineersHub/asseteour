@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Any
 
 
 class vectorFloat3d(BaseModel):
@@ -10,6 +11,10 @@ class vectorFloat3d(BaseModel):
 
     z: float = Field(0,
                      title='Z - Axis')
+
+    @classmethod
+    def from_list(cls, values: list):
+        return cls(x=values[0], y=values[1], z=values[2])
 
     @property
     def values(self):
@@ -40,6 +45,10 @@ class vectorInt3d(BaseModel):
 
     z: int = Field(0,
                    title='Z - Axis')
+
+    @classmethod
+    def from_list(cls, values: list):
+        return cls(x=values[0], y=values[1], z=values[2])
 
     @property
     def is_valid(self):
