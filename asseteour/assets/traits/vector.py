@@ -24,6 +24,9 @@ class vectorFloat3d(BaseModel):
     def IsZero(self):
         return self.x + self.y + self.z == 0
 
+    def to_list(self):
+        return [self.x, self.y, self.z]
+
     class Config:
         schema_extra = {
             'examples': [
@@ -57,6 +60,9 @@ class vectorInt3d(BaseModel):
     @property
     def values(self):
         return (self.x, self.y, self.z)
+
+    def to_list(self):
+        return [self.x, self.y, self.z]
 
     class Config:
         schema_extra = {
