@@ -38,6 +38,14 @@ class vectorFloat3d(BaseModel):
             ]
         }
 
+    # implement __add__ method
+    def __add__(self, other):
+        return vectorFloat3d(x=self.x + other.x, y=self.y + other.y, z=self.z + other.z)
+
+    # implement __sub__ method
+    def __sub__(self, other):
+        return vectorFloat3d(x=self.x - other.x, y=self.y - other.y, z=self.z - other.z)
+
 
 class vectorInt3d(BaseModel):
     x: int = Field(0,
@@ -74,3 +82,11 @@ class vectorInt3d(BaseModel):
                 }
             ]
         }
+
+    # implement __add__ method
+    def __add__(self, other):
+        return vectorInt3d(x=self.x + other.x, y=self.y + other.y, z=self.z + other.z)
+
+    # implement __sub__ method
+    def __sub__(self, other):
+        return vectorInt3d(x=self.x - other.x, y=self.y - other.y, z=self.z - other.z)
