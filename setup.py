@@ -3,11 +3,13 @@ from setuptools import setup, find_packages
 setup(
     name='asseteour',         # How you named your package folder (MyLib)
     # Start with a small number and increase it with every change you make
-    version='0.1.25',
+    version='0.1.26',
     # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     license='MIT',
     # Give a short description about your library
     description='A lite derived configuration system',
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     author='esunvoteb',                   # Type in your name
     author_email='esun@voteb.com',      # Type in your E-Mail
     # Provide either the link to your github or to your website
