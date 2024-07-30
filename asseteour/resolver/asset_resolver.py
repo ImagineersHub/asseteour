@@ -44,7 +44,7 @@ class AssetResolver(AbstractAssetResolver):
         # validate schema-json
         # e.g. validate(instance=value, schema=self.schema)
         self.model = param.model
-        self.schema = param.model.schema_json(indent=4)
+        self.schema = param.model.schema_json(indent=2)
         self.configs = {}
         self.dependency = {}
 
@@ -100,7 +100,8 @@ class AssetResolver(AbstractAssetResolver):
                 config = self.configs.get(path)
                 if config.get(ARG_PARENT):
                     parent_config = self.configs.get(config[ARG_PARENT])
-                    populated_config_data = copy.deepcopy(parent_config.get(ARG_DATA))
+                    populated_config_data = copy.deepcopy(
+                        parent_config.get(ARG_DATA))
 
                     # start to override the sub-config properties
                     self.override_data(config[ARG_DATA], populated_config_data)
@@ -174,9 +175,11 @@ class AssetResolver(AbstractAssetResolver):
             for item in target:
                 # parse the valid identity key to compare the list elements
                 if (identity_key := next(iter(IDENTITY_KEYS.intersection(item.keys())), None)) is None:
-                    raise GErrorKeyNotFound(f'Not found one of the valid identity keys from {IDENTITY_KEYS}')
+                    raise GErrorKeyNotFound(
+                        f'Not found one of the valid identity keys from {IDENTITY_KEYS}')
 
-                source_item = next(iter([src for src in source if src[identity_key] == item[identity_key]]), None)
+                source_item = next(
+                    iter([src for src in source if src[identity_key] == item[identity_key]]), None)
                 if source_item:
                     # copy the source list item to the target
                     cls.override_data(source=source_item, target=item)

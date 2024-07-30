@@ -41,7 +41,7 @@ class GithubHelper():
         self.repo_name = repo_name
 
         # use with statement to avoid printing spammy log messages
-        with logger_blocker(logger_level=logging.ERROR): 
+        with logger_blocker(logger_level=logging.ERROR):
             self.repo = self.g.get_repo(self.repo_name)
 
         # initialize filters
@@ -79,7 +79,8 @@ class GithubHelper():
             if not self.repo_name or not self.repo:
                 raise GErrorValue('Repo\'s not been initialized.')
 
-            git_trees = self.repo.get_git_tree(sha=branch or self.repo.default_branch, recursive=True)
+            git_trees = self.repo.get_git_tree(
+                sha=branch or self.repo.default_branch, recursive=True)
 
             for tree_node in git_trees.tree:
 
@@ -90,7 +91,8 @@ class GithubHelper():
 
                 # involve regex to filter the file lists
                 if filters and re.fullmatch(filters, tree_node.path):
-                    file_lists.append(self.repo.get_contents(path=tree_node.path))
+                    file_lists.append(
+                        self.repo.get_contents(path=tree_node.path))
 
         logger.debug(f'Loaded properties from repo: [{self.repo_name}]')
 
@@ -140,7 +142,7 @@ class JsonPropertiesHelper(GithubHelper):
 
             del _data[_key]
 
-        config_data = json.dumps(_data, indent=4)
+        config_data = json.dumps(_data, indent=2)
 
         # represent the git status
         # true: add/change
@@ -158,12 +160,14 @@ class JsonPropertiesHelper(GithubHelper):
                 # compare the str hash between local data and remote file. It would skip commit if the
                 # hash values are the same.
                 remote_file_data = json.dumps(json.loads(self.repo.get_contents(output).decoded_content),
-                                              indent=4)
+                                              indent=2)
                 # remote config file hash
-                remote_data_hash = hashlib.md5(remote_file_data.encode('utf-8')).hexdigest()
+                remote_data_hash = hashlib.md5(
+                    remote_file_data.encode('utf-8')).hexdigest()
 
                 # local config file hash
-                local_data_hash = hashlib.md5(config_data.encode('utf-8')).hexdigest()
+                local_data_hash = hashlib.md5(
+                    config_data.encode('utf-8')).hexdigest()
 
                 # compare config hash and perform the commit if they were different
                 if remote_data_hash != local_data_hash:
@@ -178,12 +182,13 @@ class JsonPropertiesHelper(GithubHelper):
 
                 else:
 
-                    results = (False, f'[Skip Commit] No change happend on file: [{output}]')
+                    results = (
+                        False, f'[Skip Commit] No change happend on file: [{output}]')
 
             else:
                 self.repo.create_file(path=output,
                                       message=f'{message_header} [ADDED]',
-                                      content=json.dumps(data, indent=4),
+                                      content=json.dumps(data, indent=2),
                                       branch=branch)
 
                 results = (True, f'Added config: {output}')

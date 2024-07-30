@@ -11,7 +11,7 @@ class BaseAssetWrapper(metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def schema_json(cls, indent=4):
+    def schema_json(cls, indent=2):
         pass
 
     @property
