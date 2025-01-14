@@ -19,7 +19,7 @@ setup(
               'json'],   # Keywords that define your package best
     packages=find_packages(),
     install_requires=[            # I get to this in a second
-        'pydantic>=1.9.0',
+        'pydantic>=1.7.4',
         'matplotlib>=3.5.1',
         'PyGithub>=2.1.1',
         'compipe>=0.2.3'
