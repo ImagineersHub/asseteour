@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='asseteour',         # How you named your package folder (MyLib)
     # Start with a small number and increase it with every change you make
-    version='0.1.28',
+    version='0.1.29',
     # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     license='MIT',
     # Give a short description about your library
